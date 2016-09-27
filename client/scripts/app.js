@@ -13,11 +13,11 @@ app = {
         app.handleSubmit($('#msgBox').val());
       });
 
-      $('.username').on('click', function() {
-        console.log('clicking wired correctly');
-        console.log('username', $('.username').val());
-        // app.fetchUser();
-      });
+      // $('.chat').on('click', '.chat', function() {
+      //   console.log('clicking wired correctly');
+      //   console.log('username', $('.username').val());
+      //   // app.fetchUser();
+      // });
     });
 
     //fetch initial feed
@@ -52,6 +52,7 @@ app = {
       success: function(responses) {
         console.log('msg received');
         var messages = responses.results;
+        console.log(messages);
         app.renderMessage(messages);
       },
       error: function(data) {
@@ -64,21 +65,26 @@ app = {
       contentType: 'application/json',
     });
   },
-  // fetch specific user feed
-  fetchUser: function(username) {
-    $.ajax({
-      url: 'https://api.parse.com/1/' + username,
-      type: 'GET',
-      dataType: 'json',
-      success: function(responses) {  
-        var messages = responses.results;
-        app.renderMessage(messages);
-      },
-      error: function(data) {
-        console.error('error fetching user feed');
-      }
-    });
-  },
+  // fetch specific user feed - broken, gotta return to fix
+
+  // fetchUser: function(username) {
+  //   $.ajax({
+  //     url: this.server,
+  //     type: 'GET',
+  //     dataType: 'json',
+  //     success: function(responses) {  
+  //       console.log('msg received');
+  //       var messages = responses.results;
+  //       var userMsg = messages.filter (function (message) {
+  //         return message.username === username;
+  //       });
+  //       app.renderMessage(userMsg);
+  //     },
+  //     error: function(data) {
+  //       console.error('error fetching user feed');
+  //     }
+  //   });
+  // },
 
   // helper function to clear all messages
   clearMessages: function () {
@@ -90,10 +96,15 @@ app = {
 
     messages.forEach(function(message) {
       var $message = '<div class="chat"><span class="username">' + _.escape(message.username) 
-                  + ':</span><br><span class="message">' + _.escape(message.text) + '</span></div>';
+                  + '</span>:<br><span class="message">' + _.escape(message.text) + '</span></div>';
+      // Broken - used to get user messages
+      // $('.username').on('click', function(event) {
+      //   event.preventDefault();
+      //   var user = this.innerHTML;
+      //   app.fetchUser(user);
+      // });
       $('#chats').append($message);
     });
-
   },
 
   renderRoom: function (room) {
@@ -106,12 +117,17 @@ app = {
     var msgObj = {
       username: window.location.search.slice(10),
       text: message,
-      roomname: 'lobby'
+      roomname: $('.rooms').val()
     };
 
     app.send(msgObj);
 
     $('#msgBox').val('');
+  },
+  
+  // filter messages for room chosen
+  getRoom: function () {
+
   }
 
 
