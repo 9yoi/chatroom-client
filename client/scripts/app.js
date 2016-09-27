@@ -1,26 +1,31 @@
 // YOUR CODE HERE:
 var friendsList = [];
 
-$(document).ready(function() {
-  $('#send-btn').on('click', function(event) {
-    console.log('on click');
-    event.preventDefault();
-    var msg = $('#msgBox').val();
-    app.send(_.escape(msg));
-    $('#msgBox').val('');
-
-  });
-
-});
-
 app = {
   server: 'https://api.parse.com/1/classes/messages',
   init: function () {
+    // Event listener for submit button
+    $(document).ready(function() {
+
+      $('#send-btn').on('click', function(event) {
+        console.log('on click');
+        event.preventDefault();
+        app.handleSubmit($('#msgBox').val());
+      });
+
+      $('.username').on('click', function() {
+        console.log('clicking wired correctly');
+        console.log('username', $('.username').val());
+        // app.fetchUser();
+      });
+    });
+
+    //fetch initial feed
     this.fetch();
+
   //  setInterval(function() { app.fetch(); }, 1000);
-
   },
-
+  // send message
   send: function (message) {
     $.ajax({
       url: this.server,
@@ -28,30 +33,26 @@ app = {
       data: JSON.stringify(message),
       //dataType: 'json',
       //contentType: 'application/json',
-      success: function(data, a, b) {
+      success: function(data) {
         console.log('Msg sent');
-        console.log('data: ', data, a, b);
-        $('#chats').html(data);
+        console.log('data: ', data);
+        app.fetch();
       },
       error: function (data) {
         console.error('chatterbox: Failed to send message', data);
       }
     });
   },
-
-  fetch: function (callback) {
+  // fetch all messages
+  fetch: function (username) {
     $.ajax({
       url: this.server,
       type: 'GET',
       dataType: 'json', //what does does jsonp do?
       success: function(responses) {
         console.log('msg received');
-        console.log(responses);
-        var arr = responses.results;
-        arr.forEach(function(response) {
-          var $message = '<li><span class="chat username">' + _.escape(response.username) + '</span>: ' + _.escape(response.text) + '</li>';
-          app.renderMessage($message);
-        });
+        var messages = responses.results;
+        app.renderMessage(messages);
       },
       error: function(data) {
         console.error('error receving message', data);
@@ -63,19 +64,54 @@ app = {
       contentType: 'application/json',
     });
   },
+  // fetch specific user feed
+  fetchUser: function(username) {
+    $.ajax({
+      url: 'https://api.parse.com/1/' + username,
+      type: 'GET',
+      dataType: 'json',
+      success: function(responses) {  
+        var messages = responses.results;
+        app.renderMessage(messages);
+      },
+      error: function(data) {
+        console.error('error fetching user feed');
+      }
+    });
+  },
 
+  // helper function to clear all messages
   clearMessages: function () {
     $('#chats').html('');
   },
+  // helper function to render messages on screen
+  renderMessage: function (messages) {
+    $('#chats').html('');
 
-  renderMessage: function (message) {
-    $message = $('<div class="message">' + message + '</div>');
-    $('#chats').append($message);
+    messages.forEach(function(message) {
+      var $message = '<div class="chat"><span class="username">' + _.escape(message.username) 
+                  + ':</span><br><span class="message">' + _.escape(message.text) + '</span></div>';
+      $('#chats').append($message);
+    });
+
   },
 
   renderRoom: function (room) {
     $roomName = $('<div id="' + room + '"></div>');
     $('#roomSelect').append($roomName);
+  },
+
+  handleSubmit: function (message) {
+    console.log(message);
+    var msgObj = {
+      username: window.location.search.slice(10),
+      text: message,
+      roomname: 'lobby'
+    };
+
+    app.send(msgObj);
+
+    $('#msgBox').val('');
   }
 
 
