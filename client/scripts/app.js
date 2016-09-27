@@ -44,15 +44,14 @@ app = {
     });
   },
   // fetch all messages
-  fetch: function (username) {
+  fetch: function (username, room) {
+
     $.ajax({
       url: this.server,
       type: 'GET',
       dataType: 'json', //what does does jsonp do?
       success: function(responses) {
-        console.log('msg received');
         var messages = responses.results;
-        console.log(messages);
         app.renderMessage(messages);
       },
       error: function(data) {
@@ -60,7 +59,7 @@ app = {
       },
       data: {
         limit: 30,
-        order: '-createdAt'
+        order: '-createdAt',
       },
       contentType: 'application/json',
     });
@@ -107,11 +106,6 @@ app = {
     });
   },
 
-  renderRoom: function (room) {
-    $roomName = $('<div id="' + room + '"></div>');
-    $('#roomSelect').append($roomName);
-  },
-
   handleSubmit: function (message) {
     console.log(message);
     var msgObj = {
@@ -124,12 +118,37 @@ app = {
 
     $('#msgBox').val('');
   },
-  
-  // filter messages for room chosen
+
+  renderRoom: function (room) {
+    $roomName = $('<div id="' + room + '"></div>');
+    $('#roomSelect').append($roomName);
+  },
+  // filter messages for room chosen on dropdown
   getRoom: function () {
-
+    var currRoom = $('.rooms').val();
+    
+    $.ajax({
+      url: this.server,
+      type: 'GET',
+      dataType: 'json', //what does does jsonp do?
+      success: function(responses) {
+        console.log('msg received');
+        var messages = responses.results.filter(function (message) {
+          return message.roomname === currRoom;
+        });
+        console.log(messages);
+        app.renderMessage(messages);
+      },
+      error: function(data) {
+        console.error('error receving message', data);
+      },
+      data: {
+        limit: 30,
+        order: '-createdAt',
+      },
+      contentType: 'application/json',
+    });
   }
-
 
 };
 
