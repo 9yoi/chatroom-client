@@ -2,12 +2,13 @@
 var friendsList = [];
 
 $(document).ready(function() {
-  $('#send-btn').on('click', function() {
+  $('#send-btn').on('click', function(event) {
+    console.log('on click');
+    event.preventDefault();
     var msg = $('#msgBox').val();
-    app.send(msg);
+    app.send(_.escape(msg));
     $('#msgBox').val('');
 
-   // app.send($('.msgBox'));
   });
 
 });
@@ -15,7 +16,8 @@ $(document).ready(function() {
 app = {
   server: 'https://api.parse.com/1/classes/messages',
   init: function () {
-    // setInterval(function() { app.fetch(); }, 1000);
+    this.fetch();
+  //  setInterval(function() { app.fetch(); }, 1000);
 
   },
 
@@ -24,9 +26,12 @@ app = {
       url: this.server,
       type: 'POST',
       data: JSON.stringify(message),
-      contentType: 'application/json',
-      success: function(data) {
+      //dataType: 'json',
+      //contentType: 'application/json',
+      success: function(data, a, b) {
         console.log('Msg sent');
+        console.log('data: ', data, a, b);
+        $('#chats').html(data);
       },
       error: function (data) {
         console.error('chatterbox: Failed to send message', data);
@@ -42,19 +47,20 @@ app = {
       success: function(responses) {
         console.log('msg received');
         console.log(responses);
-        app.handleMessages(responses.results);
+        var arr = responses.results;
+        arr.forEach(function(response) {
+          var $message = '<li><span class="chat username">' + _.escape(response.username) + '</span>: ' + _.escape(response.text) + '</li>';
+          app.renderMessage($message);
+        });
       },
       error: function(data) {
         console.error('error receving message', data);
       },
+      data: {
+        limit: 30,
+        order: '-createdAt'
+      },
       contentType: 'application/json',
-    });
-  },
-
-  handleMessages: function (responses) {
-    responses.forEach(function(response) {
-      var $str = '<li><span class="message">' + response.username + ': ' + response.text + '</span></li>';
-      $('#chats').append($str);
     });
   },
 
