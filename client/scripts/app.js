@@ -1,5 +1,6 @@
 // YOUR CODE HERE:
 var friendsList = [];
+var messages = '';
 
 app = {
   server: 'https://api.parse.com/1/classes/messages',
@@ -51,7 +52,7 @@ app = {
       type: 'GET',
       dataType: 'json', //what does does jsonp do?
       success: function(responses) {
-        var messages = responses.results;
+        messages = responses.results;
         app.renderMessage(messages);
       },
       error: function(data) {
@@ -92,16 +93,9 @@ app = {
   // helper function to render messages on screen
   renderMessage: function (messages) {
     $('#chats').html('');
-
     messages.forEach(function(message) {
       var $message = '<div class="chat"><span class="username">' + _.escape(message.username) 
                   + '</span>:<br><span class="message">' + _.escape(message.text) + '</span></div>';
-      // Broken - used to get user messages
-      // $('.username').on('click', function(event) {
-      //   event.preventDefault();
-      //   var user = this.innerHTML;
-      //   app.fetchUser(user);
-      // });
       $('#chats').append($message);
     });
   },
@@ -119,36 +113,33 @@ app = {
     $('#msgBox').val('');
   },
 
+  // adds room to dropdown list
   renderRoom: function (room) {
-    $roomName = $('<div id="' + room + '"></div>');
-    $('#roomSelect').append($roomName);
+    console.log('inside renderRoom');
+    $room = $('<option/>').val(room).text(room);
+    $('#rooms').append($room);
   },
-  // filter messages for room chosen on dropdown
+  
+  // filter messages for roomlist
   getRoom: function () {
-    var currRoom = $('.rooms').val();
-    
-    $.ajax({
-      url: this.server,
-      type: 'GET',
-      dataType: 'json', //what does does jsonp do?
-      success: function(responses) {
-        console.log('msg received');
-        var messages = responses.results.filter(function (message) {
-          return message.roomname === currRoom;
-        });
-        console.log(messages);
-        app.renderMessage(messages);
-      },
-      error: function(data) {
-        console.error('error receving message', data);
-      },
-      data: {
-        limit: 30,
-        order: '-createdAt',
-      },
-      contentType: 'application/json',
+    console.log ('inside getRoom');
+    var rooms = {};
+    console.log(messages);
+    messages.forEach(function(message) {
+      var roomName = message.roomname;
+      // if roomName exists on JSON response, and has not been added to rooms yet
+      if (roomName && !rooms[roomName]) {
+        app.renderRoom(roomName);
+        rooms[roomName] = true;
+      }
     });
+  },
+
+  //get messages for selected room
+  handleRoomChange: function () {
+    
   }
+
 
 };
 
