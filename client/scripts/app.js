@@ -1,6 +1,7 @@
 // YOUR CODE HERE:
 var friendsList = [];
 var messages = '';
+var roomName = 'lobby';
 
 app = {
   server: 'https://api.parse.com/1/classes/messages',
@@ -14,11 +15,7 @@ app = {
         app.handleSubmit($('#msgBox').val());
       });
 
-      // $('.chat').on('click', '.chat', function() {
-      //   console.log('clicking wired correctly');
-      //   console.log('username', $('.username').val());
-      //   // app.fetchUser();
-      // });
+      $('#rooms').on('change', app.handleRoomChange);
     });
 
     //fetch initial feed
@@ -137,7 +134,17 @@ app = {
 
   //get messages for selected room
   handleRoomChange: function () {
-    
+    // get current room
+    roomName = $('#rooms').val();
+    // render for current room
+    var roomMessages = messages.filter(function(message) {
+      if (message === roomName) {
+        return true;
+      }
+    });
+
+    app.renderMessage(roomMessages);
+
   }
 
 
